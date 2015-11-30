@@ -5,6 +5,7 @@
  */
 package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm;
 
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vector2D;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
 
@@ -33,5 +34,5 @@ public interface IPolygonFinder {
 	 * @return
 	 * @throws IllegalArgumentException if the last {@link Vertex} in closedStraightPathes is not equal to the first {@link Vertex} (= path is not closed).
 	 */
-	Vertex[] findPossibleSegments(int[] closedStraigthPathes);
+	Vector2D[] findPossibleSegments(int[] closedStraigthPathes);
 }

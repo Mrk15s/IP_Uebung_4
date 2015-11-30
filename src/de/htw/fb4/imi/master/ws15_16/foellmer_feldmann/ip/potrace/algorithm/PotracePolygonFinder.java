@@ -35,6 +35,10 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	 * Array of outlineVertex index -> first index that terminates straight path.
 	 */
 	private int[] pivots;
+	private boolean directionTop;
+	private boolean directionLeft;
+	private boolean directionBottom;
+	private boolean directionRight;
 	
 
 	/* (non-Javadoc)
@@ -70,31 +74,75 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		Vertex startVertex = this.outlineVertices[startI];
 		this.c0 = getStartConstraint();
 		this.c1 = getStartConstraint();
+		this.directionTop = false;
+		this.directionLeft = false;
+		this.directionBottom = false;
+		this.directionRight = false;
 		
 		for (int i = startI + 1; i < outlineVertices.length; i++) {
 			Vertex currentVertex = outlineVertices[i];
-			Vector2D currentVector = Factory.newVector2D(currentVertex, startVertex);
+			storeDirection(currentVertex, this.outlineVertices[i - 1]);			
 			
-			if (abusesConstraint(currentVector))	{
+			Vector2D currentVector = Factory.newVector2D(currentVertex, startVertex);
+						
+			if (moreThanThreeDirections(currentVector) || abusesConstraint(currentVector))	{
 				this.pivots[startI] = i; // save first index of vertex that terminates straight path of given startVertex
 				return;
 			}
 			
 			actualizeConstraint(currentVector);
 		}
+	}	
+
+	private void storeDirection(Vertex currentVertex, Vertex lastVertex) {
+		if (currentVertex.isAboveOf(lastVertex)) {
+			this.directionTop = true;
+		}
+		if (currentVertex.isLeftOf(lastVertex)) {
+			this.directionLeft = true;
+		}
+		if (currentVertex.isRightOf(lastVertex)) {
+			this.directionRight = true;
+		}
+		if (currentVertex.isBelowOf(lastVertex)) {
+			this.directionBottom = true;
+		}
+		
 	}
-	
+
 	private Vector2D getStartConstraint() {
 		return Factory.newVector2D(0, 0);
+	}
+	
+	private boolean moreThanThreeDirections(Vector2D currentVector) {
+		int numberDirections = 0;
+		
+		if (directionTop) {
+			numberDirections++;
+		}
+		
+		if (directionLeft) {
+			numberDirections++;
+		}
+		
+		if (directionRight) {
+			numberDirections++;
+		}
+		
+		if (directionBottom) {
+			numberDirections++;
+		}
+		
+		return numberDirections > 3;
 	}
 
 	private boolean abusesConstraint(Vector2D currentVector) {
 		if (VectorUtil.calcCrossProduct(c0, currentVector) < 0 
 				|| VectorUtil.calcCrossProduct(c1, currentVector) > 0) {
-			return false;
+			return true;
 		}
 		
-		return true;
+		return false;
 	}
 	
 	private void actualizeConstraint(Vector2D currentVector) {
@@ -162,12 +210,13 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder#findPossibleSegments(de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex[])
 	 */
 	@Override
-	public Vertex[] findPossibleSegments(int[] closedStraigthPathes) {
+	public Vector2D[] findPossibleSegments(int[] closedStraigthPathes) {
 		// TODO select possible segments
 		
-		Vertex[] segmentVertices = new Vertex[closedStraigthPathes.length];
-		for (int i = 0; i < closedStraigthPathes.length; i++) {
-			segmentVertices[i] = this.outlineVertices[i];
+		Vector2D[] segmentVertices = new Vector2D[closedStraigthPathes.length - 1];
+		
+		for (int i = 1; i < closedStraigthPathes.length; i++) {
+			segmentVertices[i - 1] = Factory.newVector2D(this.outlineVertices[i - 1], this.outlineVertices[i]);
 		}
 		
 		return segmentVertices;

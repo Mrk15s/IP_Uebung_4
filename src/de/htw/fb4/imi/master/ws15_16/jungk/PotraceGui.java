@@ -35,6 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vector2D;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.AbstractFloodFilling.Mode;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
@@ -51,20 +52,19 @@ public class PotraceGui extends JPanel {
 	private static final File openPath = new File(".");
 	private static String title = "Potrace ";
 	private static final String author = "Markus Föllmer & Sascha Feldmann";
-	private static final String initalOpen = "test3.png";
+	private static final String initalOpen = "head.png";
 	private static final int TEXTAREA_COLS = 30;
 	private static final int TEXTAREA_ROWS = 5;
-	
+
 	private static final int windowWidth = 800;
 	private static final int windowHeight = 400;
-	
+
 	private JSlider zoomSlider;
 
 	private static JFrame frame;
 
 	private ImageView srcView; // source image view
 	private ImageView dstView; // binarized image view
-
 
 	private JComboBox<String> turnPoliciesList; // the selected binarization
 												// method
@@ -95,7 +95,6 @@ public class PotraceGui extends JPanel {
 		dstView = new ImageView(maxWidth, maxHeight);
 		dstView.setMaxSize(new Dimension(maxWidth, maxHeight));
 
-
 		// load image button
 		JButton load = new JButton("Bild öffnen");
 		load.addActionListener(new ActionListener() {
@@ -118,72 +117,73 @@ public class PotraceGui extends JPanel {
 				runPotrace();
 			}
 		});
-		
-        // load raster checkbox
-        JCheckBox rasterCheckBox = new JCheckBox("Raster");
-        rasterCheckBox.addItemListener(new ItemListener() {
+
+		// load raster checkbox
+		JCheckBox rasterCheckBox = new JCheckBox("Raster");
+		rasterCheckBox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED){
+				if (e.getStateChange() == ItemEvent.SELECTED) {
 					ImageView.boolRaster = true;
 					runPotrace();
 				} else {
 					ImageView.boolRaster = false;
 					runPotrace();
 				}
-//				System.out.println(e.getStateChange() == ItemEvent.SELECTED ? "selected" : "unasdted");	
-			}        	
-        });
-		
-        // slider for zoom in picture
-        JLabel zoomLabel = new JLabel("Zoom");
-        this.zoomSlider = new JSlider((int)ImageView.MIN_ZOOM, 255, (int)ImageView.MIN_ZOOM);    
-        zoomSlider.setMinorTickSpacing(25);
-        zoomSlider.setMajorTickSpacing(50);
-        zoomSlider.setPaintLabels(true);
-        zoomSlider.setPaintTicks(true);
-    	
-    	// Change-Listener for zoom slider
-        zoomSlider.addChangeListener(new ChangeListener() {
-  			@Override
-  			public void stateChanged(ChangeEvent e) {
-  				dstView.setZoom(zoomSlider.getValue());  				
-  			}
-  		});
+				// System.out.println(e.getStateChange() == ItemEvent.SELECTED ?
+				// "selected" : "unasdted");
+			}
+		});
+
+		// slider for zoom in picture
+		JLabel zoomLabel = new JLabel("Zoom");
+		this.zoomSlider = new JSlider((int) ImageView.MIN_ZOOM, 255, (int) ImageView.MIN_ZOOM);
+		zoomSlider.setMinorTickSpacing(25);
+		zoomSlider.setMajorTickSpacing(50);
+		zoomSlider.setPaintLabels(true);
+		zoomSlider.setPaintTicks(true);
+
+		// Change-Listener for zoom slider
+		zoomSlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				dstView.setZoom(zoomSlider.getValue());
+			}
+		});
 
 		// some status text
 		statusArea = new JTextArea(TEXTAREA_ROWS, TEXTAREA_COLS);
 		statusArea.setEditable(false);
-		
+
 		// Inner outlines checkbox
 		this.displayInnerCheckbox = new JCheckBox("Inner outlines", ImageView.SHOW_INNER_OUTLINES_DEFAULT);
-		
+
 		displayInnerCheckbox.addChangeListener(new ChangeListener() {
-  			@Override
-  			public void stateChanged(ChangeEvent e) {
-  				dstView.setDisplayInner(displayInnerCheckbox.isSelected());		
-  				repaint();
-  			}
-  		});
-		
-        this.showOutlinesCheckbox = new JCheckBox("Outlines", ImageView.SHOW_OUTLINES_DEFAULT);
-        showOutlinesCheckbox.addItemListener(new ItemListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				dstView.setDisplayInner(displayInnerCheckbox.isSelected());
+				repaint();
+			}
+		});
+
+		this.showOutlinesCheckbox = new JCheckBox("Outlines", ImageView.SHOW_OUTLINES_DEFAULT);
+		showOutlinesCheckbox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				dstView.setShowOutlines(showOutlinesCheckbox.isSelected());
 				repaint();
-			}        	
-        });
+			}
+		});
 
-        this.showPolygonsCheckbox = new JCheckBox("Polygons", ImageView.SHOW_OUTLINES_POLYGONS_DEFAULT);
-        showPolygonsCheckbox.addItemListener(new ItemListener() {
+		this.showPolygonsCheckbox = new JCheckBox("Polygons", ImageView.SHOW_OUTLINES_POLYGONS_DEFAULT);
+		showPolygonsCheckbox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				dstView.setShowPolygons(showPolygonsCheckbox.isSelected());
 				repaint();
-			}        	
-        });
-        
+			}
+		});
+
 		JScrollPane scrollPane = new JScrollPane(statusArea);
 
 		// arrange all controls
@@ -199,10 +199,10 @@ public class PotraceGui extends JPanel {
 		controls.add(displayInnerCheckbox, c);
 		controls.add(showPolygonsCheckbox, c);
 		controls.add(rasterCheckBox, c);
-		
+
 		this.imagesPanel = new JPanel(new FlowLayout());
 		imagesPanel.setPreferredSize(new Dimension(windowWidth, windowHeight));
-		imagesPanel.add(dstView);		
+		imagesPanel.add(dstView);
 
 		add(controls, BorderLayout.NORTH);
 		add(imagesPanel, BorderLayout.CENTER);
@@ -272,17 +272,18 @@ public class PotraceGui extends JPanel {
 
 		triggerOutlineFinding(policy, dstPixels);
 		triggerPolygonFinding(dstPixels);
-		
+
 		statusArea.setText(message);
-		
+
 		dstView.setPixels(srcPixels, width, height);
-//		dstView.setPixels(ImageUtil.get1DFrom2DArray(width, height, ((Potrace) this.potraceAlgorithm).getProcessingPixels()), width, height);
+		// dstView.setPixels(ImageUtil.get1DFrom2DArray(width, height,
+		// ((Potrace) this.potraceAlgorithm).getProcessingPixels()), width,
+		// height);
 		frame.pack();
 
 		dstView.saveImage("out.png");
 
 	}
-
 
 	protected void triggerOutlineFinding(TurnPolicy policy, int[] dstPixels) {
 		long time = 0;
@@ -291,10 +292,10 @@ public class PotraceGui extends JPanel {
 		this.outlinePathFinderAlgorithm = Factory.newPotraceOutlineFinderAlgorithm();
 		this.outlinePathFinderAlgorithm.setTurnPolicy(policy);
 		time = detectAndShowOutline(dstPixels);
-		
+
 		message += "\nRequired time for outline detection: " + time + " ms";
-	}	
-	
+	}
+
 	private long detectAndShowOutline(int[] dstPixels) {
 		this.outlinePathFinderAlgorithm.setOriginalBinaryPixels(this.srcView.getImgWidth(), this.srcView.getImgHeight(),
 				this.srcView.getPixels());
@@ -305,34 +306,36 @@ public class PotraceGui extends JPanel {
 		long time = System.currentTimeMillis() - startTime;
 
 		// mark outlines somehow
-//		this.paintOutlines(foundOutlines, dstPixels);
+		// this.paintOutlines(foundOutlines, dstPixels);
 		this.dstView.setOutlines(foundOutlines);
 
 		return time;
 	}
-	
+
 	private void triggerPolygonFinding(int[] dstPixels) {
 		this.polygonFinderAlgorithm = Factory.newPotracePolyginFinderAlgorithm();
-		
+
 		long time = findAndShowPolygons(dstPixels);
-		
+
 		message += "\nRequired time for polygon finding: " + time + " ms";
 	}
 
 	private long findAndShowPolygons(int[] dstPixels) {
 		Set<Outline> outlines = this.dstView.getOutlines();
-		Set<Vertex[]> polygons = new HashSet<>();
-		
+		Set<Vector2D[]> outerPolygons = new HashSet<>();
+
 		long startTime = System.currentTimeMillis();
-		
+
 		for (Outline outline : outlines) {
-			int[] pivots = this.polygonFinderAlgorithm.findStraightPathes(outline);
-			polygons.add(this.polygonFinderAlgorithm.findPossibleSegments(pivots));
+			if (outline.isOuter()) {
+				int[] pivots = this.polygonFinderAlgorithm.findStraightPathes(outline);
+				outerPolygons.add(this.polygonFinderAlgorithm.findPossibleSegments(pivots));
+			} // TODO add inner in separate list
 		}
-		
+
 		long time = System.currentTimeMillis() - startTime;
-		this.dstView.setPolygons(polygons);
-		
+		this.dstView.setOuterPolygons(outerPolygons);
+
 		return time;
 	}
 
