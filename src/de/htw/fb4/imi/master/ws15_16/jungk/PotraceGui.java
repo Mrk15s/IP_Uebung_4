@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -34,9 +35,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.AbstractFloodFilling.Mode;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder.TurnPolicy;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
 
 public class PotraceGui extends JPanel {
@@ -71,7 +74,10 @@ public class PotraceGui extends JPanel {
 	protected Mode mode;
 	private JCheckBox displayInnerCheckbox;
 	private JPanel imagesPanel;
-	private IOutlinePathFinder potraceAlgorithm;
+	private IOutlinePathFinder outlinePathFinderAlgorithm;
+	private IPolygonFinder polygonFinderAlgorithm;
+	private JCheckBox showOutlinesCheckbox;
+	private JCheckBox showPolygonsCheckbox;
 
 	public PotraceGui() {
 		super(new BorderLayout(border, border));
@@ -150,8 +156,34 @@ public class PotraceGui extends JPanel {
 		statusArea.setEditable(false);
 		
 		// Inner outlines checkbox
-		this.displayInnerCheckbox = new JCheckBox("Inner outlines");
+		this.displayInnerCheckbox = new JCheckBox("Inner outlines", ImageView.SHOW_INNER_OUTLINES_DEFAULT);
+		
+		displayInnerCheckbox.addChangeListener(new ChangeListener() {
+  			@Override
+  			public void stateChanged(ChangeEvent e) {
+  				dstView.setDisplayInner(displayInnerCheckbox.isSelected());		
+  				repaint();
+  			}
+  		});
+		
+        this.showOutlinesCheckbox = new JCheckBox("Outlines", ImageView.SHOW_OUTLINES_DEFAULT);
+        showOutlinesCheckbox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				dstView.setShowOutlines(showOutlinesCheckbox.isSelected());
+				repaint();
+			}        	
+        });
 
+        this.showPolygonsCheckbox = new JCheckBox("Polygons", ImageView.SHOW_OUTLINES_POLYGONS_DEFAULT);
+        showPolygonsCheckbox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				dstView.setShowPolygons(showPolygonsCheckbox.isSelected());
+				repaint();
+			}        	
+        });
+        
 		JScrollPane scrollPane = new JScrollPane(statusArea);
 
 		// arrange all controls
@@ -163,17 +195,11 @@ public class PotraceGui extends JPanel {
 		controls.add(turnPoliciesList, c);
 		controls.add(zoomLabel, c);
 		controls.add(zoomSlider, c);
+		controls.add(showOutlinesCheckbox, c);
 		controls.add(displayInnerCheckbox, c);
+		controls.add(showPolygonsCheckbox, c);
 		controls.add(rasterCheckBox, c);
 		
-		displayInnerCheckbox.addChangeListener(new ChangeListener() {
-  			@Override
-  			public void stateChanged(ChangeEvent e) {
-  				dstView.setDisplayInner(displayInnerCheckbox.isSelected());		
-  				repaint();
-  			}
-  		});
-
 		this.imagesPanel = new JPanel(new FlowLayout());
 		imagesPanel.setPreferredSize(new Dimension(windowWidth, windowHeight));
 		imagesPanel.add(dstView);		
@@ -244,37 +270,69 @@ public class PotraceGui extends JPanel {
 		// this.message = "Binarisieren mit \"" + methodName + "\"";
 		this.message = "Konturenerkennung mit Potrace und Turn Policy \"" + policy;
 
+		triggerOutlineFinding(policy, dstPixels);
+		triggerPolygonFinding(dstPixels);
+		
 		statusArea.setText(message);
-
-		long time = 0;
-
-		// trigger potrace
-		this.potraceAlgorithm = Factory.newPotraceAlgorithm();
-		this.potraceAlgorithm.setTurnPolicy(policy);
-		time = detectAndShowOutline(dstPixels);
-//
+		
 		dstView.setPixels(srcPixels, width, height);
 //		dstView.setPixels(ImageUtil.get1DFrom2DArray(width, height, ((Potrace) this.potraceAlgorithm).getProcessingPixels()), width, height);
 		frame.pack();
 
 		dstView.saveImage("out.png");
 
-		statusArea.setText(message + "\nRequired time: " + time + " ms");
 	}
 
+
+	protected void triggerOutlineFinding(TurnPolicy policy, int[] dstPixels) {
+		long time = 0;
+
+		// trigger outline finding
+		this.outlinePathFinderAlgorithm = Factory.newPotraceOutlineFinderAlgorithm();
+		this.outlinePathFinderAlgorithm.setTurnPolicy(policy);
+		time = detectAndShowOutline(dstPixels);
+		
+		message += "\nRequired time for outline detection: " + time + " ms";
+	}	
+	
 	private long detectAndShowOutline(int[] dstPixels) {
-		this.potraceAlgorithm.setOriginalBinaryPixels(this.srcView.getImgWidth(), this.srcView.getImgHeight(),
+		this.outlinePathFinderAlgorithm.setOriginalBinaryPixels(this.srcView.getImgWidth(), this.srcView.getImgHeight(),
 				this.srcView.getPixels());
 
 		// only measure labeling algorithm runtime, not the time to color pixels
 		long startTime = System.currentTimeMillis();
-		Set<Outline> foundOutlines = this.potraceAlgorithm.find();
+		Set<Outline> foundOutlines = this.outlinePathFinderAlgorithm.find();
 		long time = System.currentTimeMillis() - startTime;
 
 		// mark outlines somehow
 //		this.paintOutlines(foundOutlines, dstPixels);
 		this.dstView.setOutlines(foundOutlines);
 
+		return time;
+	}
+	
+	private void triggerPolygonFinding(int[] dstPixels) {
+		this.polygonFinderAlgorithm = Factory.newPotracePolyginFinderAlgorithm();
+		
+		long time = findAndShowPolygons(dstPixels);
+		
+		message += "\nRequired time for polygon finding: " + time + " ms";
+	}
+
+	private long findAndShowPolygons(int[] dstPixels) {
+		Set<Outline> outlines = this.dstView.getOutlines();
+		Set<Vertex[]> polygons = new HashSet<>();
+		
+		long startTime = System.currentTimeMillis();
+		
+		for (Outline outline : outlines) {
+			int[] pivots = this.polygonFinderAlgorithm.findStraightPathes(outline);
+			polygons.add(this.polygonFinderAlgorithm.findPossibleSegments(pivots));
+		}
+		
+		long time = System.currentTimeMillis() - startTime;
+		this.dstView.setPolygons(polygons);
+		
 		return time;
 	}
 

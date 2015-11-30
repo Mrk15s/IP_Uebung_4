@@ -113,7 +113,7 @@ public class Outline {
 	}
 
 	public Vertex[] getVertices() {
-		return whiteVertices.toArray(new Vertex[this.whiteVertices.size()]);
+		return blackVertices.toArray(new Vertex[this.blackVertices.size()]);
 	}
 
 	public OutlineEdge[] getEdges() {
@@ -247,5 +247,21 @@ public class Outline {
 				}
 			}				
 		}
+	}
+
+	/**
+	 * Get first vertex on outline (which is a black pixel).
+	 * @return
+	 */
+	public Vertex getFirst() {
+		return this.edges.get(0).getBlack();
+	}
+
+	/**
+	 * Get number of vertices ON the outline (those are the black pixels).
+	 * @return
+	 */
+	public int getNumberOfVertices() {
+		return this.blackVertices.size();
 	}
 }

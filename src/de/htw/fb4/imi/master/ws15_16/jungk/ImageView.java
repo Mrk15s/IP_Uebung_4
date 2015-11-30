@@ -20,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.OutlineEdge;
 
@@ -35,6 +36,10 @@ public class ImageView extends JScrollPane {
 	
 	static final float WIDTH_OUTLINE = 2;
 
+	static final boolean SHOW_OUTLINES_DEFAULT = false;
+	static final boolean SHOW_INNER_OUTLINES_DEFAULT = false;
+	static final boolean SHOW_OUTLINES_POLYGONS_DEFAULT = false;	
+
 	private ImageScreen screen = null;
 	private Dimension maxSize = null;
 	private int borderX = -1;
@@ -47,11 +52,15 @@ public class ImageView extends JScrollPane {
 	
 
 	protected Set<Outline> outlines;
+	protected Set<Vertex[]> polygons;
 
 	private double zoom = MIN_ZOOM;
 	int pixels[] = null; // pixel array in ARGB format
 
-	private boolean displayInnerOutline = false;
+	private boolean displayInnerOutline = SHOW_INNER_OUTLINES_DEFAULT;
+	private boolean showOutlines = SHOW_OUTLINES_DEFAULT;
+	private boolean showPolygons = SHOW_OUTLINES_POLYGONS_DEFAULT;
+
 
 	public ImageView(int width, int height) {
 		// construct empty image of given size
@@ -70,6 +79,16 @@ public class ImageView extends JScrollPane {
 		screen.revalidate();
 	}
 
+	public void setShowOutlines(boolean showOutlines) {
+		this.showOutlines = showOutlines;
+		screen.revalidate();
+	}
+	
+	public void setShowPolygons(boolean showPolygons) {
+		this.showPolygons = showPolygons;
+		screen.revalidate();
+	}
+	
 	public double getZoom() {
 		return zoom;
 	}
@@ -85,6 +104,11 @@ public class ImageView extends JScrollPane {
 
 	public void setOutlines(Set<Outline> foundOutlines) {
 		this.outlines = foundOutlines;
+		screen.revalidate();
+	}
+	
+	public void setPolygons(Set<Vertex[]> polygons) {
+		this.polygons = polygons;	
 		screen.revalidate();
 	}
 
@@ -294,9 +318,10 @@ public class ImageView extends JScrollPane {
 		}
 
 		public void paintComponent(Graphics g) {
-
 			if (image != null) {
 				r = this.getBounds();
+				
+//				g.clearRect(0, 0, (int) r.getWidth(), (int) r.getHeight());
 
 				// limit image view magnification
 				if (maxViewMagnification > 0.0) {
@@ -346,11 +371,16 @@ public class ImageView extends JScrollPane {
 					this.paintRaster(g);
 				}
 				
-				this.paintOutlines(g);
+				if (showOutlines) {
+					this.paintOutlines(g);
+				}
 				
+				if (showPolygons) {
+					this.paintPolygons(g);
+				}
 			}
-		}
-		
+		}		
+	
 		private void paintRaster(Graphics g){
 			g.setColor(Color.GRAY);
 			for (int i = 1; i < (image.getWidth()); i++) {
@@ -410,6 +440,13 @@ public class ImageView extends JScrollPane {
 			g.setColor(edgeColor);
 			g.drawLine(startX, startY, targetX, targetY);
 		}
+		
+		private void paintPolygons(Graphics g) {
+			// TODO Auto-generated method stub
+			System.out.println("Polygons:");
+			System.out.println(polygons);
+		}
+
 
 		private int calcScaledX(int x) {
 			return (int) ((((x / this.image.getWidth()) * 100) + x) * zoom);

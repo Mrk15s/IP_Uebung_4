@@ -16,7 +16,9 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.OptimizedBreadthFir
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.OptimizedDepthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.Sequential;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.PotraceOutlineFinder;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.PotracePolygonFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.IsoData;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdFindingAlgorithm;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdUserInput;
@@ -107,7 +109,24 @@ public class Factory {
 		return algorithm;
 	}
 
-	public static IOutlinePathFinder newPotraceAlgorithm() {
+	public static IOutlinePathFinder newPotraceOutlineFinderAlgorithm() {
 		return new PotraceOutlineFinder();
+	}
+
+	public static Vector2D newVector2D(Vertex a, Vertex b) {
+		return new Vector2D(
+				b.getX() - a.getX(),
+				b.getY() - a.getY(),
+				a,
+				b
+			);
 	}	
+	
+	public static Vector2D newVector2D(int x, int y) {
+		return new Vector2D(x, y, null, null);
+	}
+
+	public static IPolygonFinder newPotracePolyginFinderAlgorithm() {
+		return new PotracePolygonFinder();
+	}
 }

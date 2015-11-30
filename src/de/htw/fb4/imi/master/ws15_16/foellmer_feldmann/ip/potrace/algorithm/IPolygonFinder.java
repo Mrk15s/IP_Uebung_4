@@ -22,15 +22,16 @@ public interface IPolygonFinder {
 	 * A straigt path is an array of {@link Vertex} that fullfill the straigt path constraints.
 	 * 
 	 * @param givenOutline
-	 * @return
+	 * @return an array of pivot elements: Array of outlineVertex index -> first index that terminates straight path.
+	 * @throws IllegalArgumentException if the given outline doesn't contain any vertex
 	 */
-	Vertex[] findStraightPathes(Outline givenOutline);
+	int[] findStraightPathes(Outline givenOutline);
 
 	/**
 	 * Find 
-	 * @param straigtPathes
+	 * @param closedStraigthPathes
 	 * @return
 	 * @throws IllegalArgumentException if the last {@link Vertex} in closedStraightPathes is not equal to the first {@link Vertex} (= path is not closed).
 	 */
-	Vertex[] findPossibleSegments(Vertex[] closedStraigthPathes);
+	Vertex[] findPossibleSegments(int[] closedStraigthPathes);
 }
