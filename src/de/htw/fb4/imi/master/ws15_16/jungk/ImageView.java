@@ -39,6 +39,7 @@ public class ImageView extends JScrollPane {
 	static final float WIDTH_POLYGON = 3;
 	static final int RADIUS_POLYGON_DOT = 4;
 
+	static final boolean SHOW_IMAGE_DEFAULT = true;
 	static final boolean SHOW_OUTLINES_DEFAULT = false;
 	static final boolean SHOW_INNER_OUTLINES_DEFAULT = false;
 	static final boolean SHOW_OUTLINES_POLYGONS_DEFAULT = false;
@@ -59,6 +60,7 @@ public class ImageView extends JScrollPane {
 	private double zoom = MIN_ZOOM;
 	int pixels[] = null; // pixel array in ARGB format
 
+	private boolean showImage = SHOW_IMAGE_DEFAULT;
 	private boolean displayInnerOutline = SHOW_INNER_OUTLINES_DEFAULT;
 	private boolean showOutlines = SHOW_OUTLINES_DEFAULT;
 	private boolean showPolygons = SHOW_OUTLINES_POLYGONS_DEFAULT;
@@ -73,6 +75,11 @@ public class ImageView extends JScrollPane {
 	public ImageView(File file) {
 		// construct image from file
 		loadImage(file);
+	}
+	
+	public void setShowImage(boolean showImage) {
+		this.showImage = showImage;
+		screen.revalidate();
 	}
 
 	public void setDisplayInner(boolean selected) {
@@ -366,7 +373,9 @@ public class ImageView extends JScrollPane {
 				}
 
 				// draw image
-				g.drawImage(image, offsetX, offsetY, r.width, r.height, this);
+				if (showImage) {
+					g.drawImage(image, offsetX, offsetY, r.width, r.height, this);
+				}
 
 				if (boolRaster) {
 					this.paintRaster(g);

@@ -36,7 +36,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vector2D;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.AbstractFloodFilling.Mode;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder.TurnPolicy;
@@ -78,6 +77,7 @@ public class PotraceGui extends JPanel {
 	private IPolygonFinder polygonFinderAlgorithm;
 	private JCheckBox showOutlinesCheckbox;
 	private JCheckBox showPolygonsCheckbox;
+	private JCheckBox showImageCheckbox;
 
 	public PotraceGui() {
 		super(new BorderLayout(border, border));
@@ -155,22 +155,30 @@ public class PotraceGui extends JPanel {
 		statusArea = new JTextArea(TEXTAREA_ROWS, TEXTAREA_COLS);
 		statusArea.setEditable(false);
 
-		// Inner outlines checkbox
-		this.displayInnerCheckbox = new JCheckBox("Inner outlines", ImageView.SHOW_INNER_OUTLINES_DEFAULT);
-
-		displayInnerCheckbox.addChangeListener(new ChangeListener() {
+		this.showImageCheckbox = new JCheckBox("Image", ImageView.SHOW_IMAGE_DEFAULT);
+		showImageCheckbox.addItemListener(new ItemListener() {
 			@Override
-			public void stateChanged(ChangeEvent e) {
-				dstView.setDisplayInner(displayInnerCheckbox.isSelected());
+			public void itemStateChanged(ItemEvent e) {
+				dstView.setShowImage(showImageCheckbox.isSelected());
 				repaint();
 			}
-		});
+		});		
 
 		this.showOutlinesCheckbox = new JCheckBox("Outlines", ImageView.SHOW_OUTLINES_DEFAULT);
 		showOutlinesCheckbox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				dstView.setShowOutlines(showOutlinesCheckbox.isSelected());
+				repaint();
+			}
+		});
+		
+		this.displayInnerCheckbox = new JCheckBox("Inner outlines", ImageView.SHOW_INNER_OUTLINES_DEFAULT);
+
+		displayInnerCheckbox.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				dstView.setDisplayInner(displayInnerCheckbox.isSelected());
 				repaint();
 			}
 		});
@@ -195,6 +203,7 @@ public class PotraceGui extends JPanel {
 		controls.add(turnPoliciesList, c);
 		controls.add(zoomLabel, c);
 		controls.add(zoomSlider, c);
+		controls.add(showImageCheckbox, c);
 		controls.add(showOutlinesCheckbox, c);
 		controls.add(displayInnerCheckbox, c);
 		controls.add(showPolygonsCheckbox, c);
@@ -329,7 +338,8 @@ public class PotraceGui extends JPanel {
 		for (Outline outline : outlines) {
 			if (outline.isOuter()) {
 				int[] pivots = this.polygonFinderAlgorithm.findStraightPathes(outline);
-				outerPolygons.add(this.polygonFinderAlgorithm.findPossibleSegments(pivots));
+				Set<Vector2D[]> possibleSegments = this.polygonFinderAlgorithm.findPossibleSegments(pivots);
+				outerPolygons.add(this.polygonFinderAlgorithm.findOptimalPolygon(possibleSegments));
 			} // TODO add inner in separate list
 		}
 
