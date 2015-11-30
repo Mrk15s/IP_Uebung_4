@@ -15,9 +15,8 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.DepthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.OptimizedBreadthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.OptimizedDepthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.Sequential;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.outline.Outline;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.IOutlinePathFinder;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.Potrace;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.PotraceOutlineFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.IsoData;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdFindingAlgorithm;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdUserInput;
@@ -46,11 +45,6 @@ public class Factory {
 		algorithm.setStartValue(startValue);
 		
 		return algorithm;
-	}
-	
-	public static IOriginalPixels newOutlineAlgorithm()
-	{
-		return new Outline();
 	}
 	
 	public static AbstractFloodFilling newDepthFirst(Observer observer) {
@@ -114,6 +108,6 @@ public class Factory {
 	}
 
 	public static IOutlinePathFinder newPotraceAlgorithm() {
-		return new Potrace();
+		return new PotraceOutlineFinder();
 	}	
 }

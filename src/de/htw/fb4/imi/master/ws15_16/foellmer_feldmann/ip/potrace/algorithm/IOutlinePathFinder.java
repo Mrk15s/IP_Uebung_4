@@ -3,14 +3,14 @@
  *
  * Authors: Markus Föllmer, Sascha Feldmann
  */
-package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace;
+package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm;
 
 import java.util.Set;
 
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Edge;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.IOriginalPixels;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Outline;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.OutlineEdge;
 
 /**
  * Interface for potrace path finding algorithms.
@@ -33,7 +33,7 @@ public interface IOutlinePathFinder extends IOriginalPixels {
 		 * @return
 		 * @throws IllegalStateException
 		 */
-		public Edge getNextEdge(Edge currentEdge, Vertex leftWhiteAhead, Vertex rightBlackAhead) {
+		public OutlineEdge getNextEdge(OutlineEdge currentEdge, Vertex leftWhiteAhead, Vertex rightBlackAhead) {
 			switch (this) {
 			case TURN_LEFT:
 				return this.getLeftEdge(currentEdge, leftWhiteAhead);
@@ -44,12 +44,12 @@ public interface IOutlinePathFinder extends IOriginalPixels {
 			}
 		}
 		
-		private Edge getLeftEdge(Edge currentEdge, Vertex leftWhiteAhead) {
-			return new Edge(leftWhiteAhead, currentEdge.getBlack());			
+		private OutlineEdge getLeftEdge(OutlineEdge currentEdge, Vertex leftWhiteAhead) {
+			return new OutlineEdge(leftWhiteAhead, currentEdge.getBlack());			
 		}
 		
-		private Edge getRightEdge(Edge currentEdge, Vertex rightBlackAhead) {
-			return new Edge(currentEdge.getWhite(), rightBlackAhead);
+		private OutlineEdge getRightEdge(OutlineEdge currentEdge, Vertex rightBlackAhead) {
+			return new OutlineEdge(currentEdge.getWhite(), rightBlackAhead);
 		}
 
 		public static String[] stringValues() {

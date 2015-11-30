@@ -34,10 +34,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Outline;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.AbstractFloodFilling.Mode;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.IOutlinePathFinder;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.IOutlinePathFinder.TurnPolicy;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder.TurnPolicy;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
 
 public class PotraceGui extends JPanel {
 

@@ -20,8 +20,8 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Edge;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Outline;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.OutlineEdge;
 
 public class ImageView extends JScrollPane {
 
@@ -371,12 +371,12 @@ public class ImageView extends JScrollPane {
 		}
 
 		private void paintOutline(Graphics g, Outline outline) {
-			for (Edge edgeOnOutline : outline.getEdges()) {
+			for (OutlineEdge edgeOnOutline : outline.getEdges()) {
 				paintEdgeOnOutline(g, outline, edgeOnOutline);
 			}
 		}
 
-		private void paintEdgeOnOutline(Graphics g, Outline outline, Edge edgeOnOutline) {
+		private void paintEdgeOnOutline(Graphics g, Outline outline, OutlineEdge edgeOnOutline) {
 			Color edgeColor = outline.isOuter() ? COLOR_OUTER_OUTLINE : COLOR_INNER_OUTLINE;
 
 			// offset to set the correct black pixel corner

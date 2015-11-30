@@ -3,7 +3,7 @@
  *
  * Authors: Markus Föllmer, Sascha Feldmann
  */
-package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip;
+package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.util.ImageUtil;
 
 /**
@@ -26,7 +27,7 @@ public class Outline {
 
 	protected List<Vertex> whiteVertices = new ArrayList<>();
 	protected List<Vertex> blackVertices = new ArrayList<>();
-	protected List<Edge> edges = new ArrayList<>();
+	protected List<OutlineEdge> edges = new ArrayList<>();
 	protected int[][] originalPixels;
 	/**
 	 * Map of y values -> x values to get all pixels WITHIN the outline
@@ -100,7 +101,7 @@ public class Outline {
 		this.determineLimit(black);
 	}
 
-	public void addEdge(Edge edge) {
+	public void addEdge(OutlineEdge edge) {
 		if (this.edges.size() > 0 && this.edges.get(0).equals(edge)) {
 			// path is completed
 			this.isClosed = true;
@@ -115,11 +116,11 @@ public class Outline {
 		return whiteVertices.toArray(new Vertex[this.whiteVertices.size()]);
 	}
 
-	public Edge[] getEdges() {
-		return edges.toArray(new Edge[this.edges.size()]);
+	public OutlineEdge[] getEdges() {
+		return edges.toArray(new OutlineEdge[this.edges.size()]);
 	}
 
-	public boolean hasEdge(Edge e) {
+	public boolean hasEdge(OutlineEdge e) {
 		return this.edges.contains(e);
 	}
 
@@ -134,7 +135,7 @@ public class Outline {
 		boolean isSurroundedLeft = false;
 		boolean isSurroundedRight = false;
 		
-		for (Edge edge : this.edges) {
+		for (OutlineEdge edge : this.edges) {
 			Vertex blackVertex = edge.getBlack();
 			if ( edge.getWhite().equals(pixelVertex)) {
 				return false;

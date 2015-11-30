@@ -3,9 +3,11 @@
  *
  * Authors: Markus Föllmer, Sascha Feldmann
  */
-package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip;
+package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models;
 
 import java.util.HashSet;
+
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 
 /**
  * [SHORT_DESCRIPTION] 

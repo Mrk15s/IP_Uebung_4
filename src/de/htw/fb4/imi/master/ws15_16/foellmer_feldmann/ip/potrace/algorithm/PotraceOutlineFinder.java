@@ -3,14 +3,14 @@
  *
  * Authors: Markus Föllmer, Sascha Feldmann
  */
-package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace;
+package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm;
 
 import java.util.Set;
 
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Edge;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Outline;
-import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.OutlineSequenceSet;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.OutlineEdge;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.OutlineSequenceSet;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.util.ImageUtil;
 
 /**
@@ -19,7 +19,7 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.util.ImageUtil;
  * @author Sascha Feldmann <sascha.feldmann@gmx.de>
  * @since 17.11.2015
  */
-public class Potrace implements IOutlinePathFinder {
+public class PotraceOutlineFinder implements IOutlinePathFinder {
 	private static final int PROCESSED = 1;
 
 	private TurnPolicy turnPolicy = TurnPolicy.TURN_RIGHT;
@@ -156,7 +156,7 @@ public class Potrace implements IOutlinePathFinder {
 	private Outline createPath(int x, int y, boolean isOuter) {
 		Outline sequence = new Outline(isOuter);
 
-		Edge e = this.getInitialEdge(x, y, isOuter);
+		OutlineEdge e = this.getInitialEdge(x, y, isOuter);
 
 		if (null == e) {
 			// initial edge doesn't match pattern (left black, right white)
@@ -183,7 +183,7 @@ public class Potrace implements IOutlinePathFinder {
 		return sequence;
 	}
 
-	private Edge getInitialEdge(int x, int y, boolean isOuter) {
+	private OutlineEdge getInitialEdge(int x, int y, boolean isOuter) {
 		Vertex black = new Vertex(x, y); // current vertex (black pixel)
 		Vertex whiteLeft = new Vertex(x - 1, y); // left neighbor of current
 													// vertex (white pixel)
@@ -192,14 +192,14 @@ public class Potrace implements IOutlinePathFinder {
 				&& !ImageUtil.isForegoundPixel(this.processingPixels[whiteLeft.getX()][whiteLeft.getY()])
 				&& (!outlines.isSurroundedByAnExistingOutline(black, true) || !isOuter)
 				) {
-			return new Edge(whiteLeft, black);
+			return new OutlineEdge(whiteLeft, black);
 		}
 		
 		return null;
 	}
 
-	private Edge findNextEdgeOnOutline(Edge startEdge, Outline sequence) {
-		Edge potentialEdge = this.getFirstPatternEdge(startEdge);
+	private OutlineEdge findNextEdgeOnOutline(OutlineEdge startEdge, Outline sequence) {
+		OutlineEdge potentialEdge = this.getFirstPatternEdge(startEdge);
 
 		if (null != potentialEdge) {
 			return potentialEdge;
@@ -233,7 +233,7 @@ public class Potrace implements IOutlinePathFinder {
 	 * @return null if the pattern didn't match, otherwise turn right and return
 	 *         next edge next edge
 	 */
-	private Edge getFirstPatternEdge(Edge currentEdge) {
+	private OutlineEdge getFirstPatternEdge(OutlineEdge currentEdge) {
 		Vertex leftBlackAhead = new Vertex(currentEdge.getBlack().getX() + currentEdge.getDirectionX(),
 				currentEdge.getBlack().getY() + currentEdge.getDirectionY());
 
@@ -244,7 +244,7 @@ public class Potrace implements IOutlinePathFinder {
 				&& ImageUtil.isForegoundPixel(this.processingPixels[leftBlackAhead.getX()][leftBlackAhead.getY()])
 				&& ImageUtil.isForegoundPixel(this.processingPixels[rightBlackAhead.getX()][rightBlackAhead.getY()])) {
 			// pattern matches
-			return new Edge(currentEdge.getWhite(), rightBlackAhead);
+			return new OutlineEdge(currentEdge.getWhite(), rightBlackAhead);
 		}
 
 		return null;
@@ -257,7 +257,7 @@ public class Potrace implements IOutlinePathFinder {
 	 * @return null if the pattern didn't match, otherwise go ahead and return
 	 *         next edge
 	 */
-	private Edge getSecondPatternEdge(Edge currentEdge) {
+	private OutlineEdge getSecondPatternEdge(OutlineEdge currentEdge) {
 		Vertex leftBlackAhead = new Vertex(currentEdge.getBlack().getX() + currentEdge.getDirectionX(),
 				currentEdge.getBlack().getY() + currentEdge.getDirectionY());
 
@@ -269,7 +269,7 @@ public class Potrace implements IOutlinePathFinder {
 				&& (!this.isWithinImageBoundaries(rightWhiteAhead) || !ImageUtil
 						.isForegoundPixel(this.processingPixels[rightWhiteAhead.getX()][rightWhiteAhead.getY()]))) {
 			// pattern matches
-			return new Edge(rightWhiteAhead, leftBlackAhead);
+			return new OutlineEdge(rightWhiteAhead, leftBlackAhead);
 		}
 
 		return null;
@@ -282,7 +282,7 @@ public class Potrace implements IOutlinePathFinder {
 	 * @return null if the pattern didn't match, otherwise turn left and return
 	 *         next edge
 	 */
-	private Edge getThirdPatternEdge(Edge currentEdge) {
+	private OutlineEdge getThirdPatternEdge(OutlineEdge currentEdge) {
 		Vertex leftWhiteAhead = new Vertex(currentEdge.getBlack().getX() + currentEdge.getDirectionX(),
 				currentEdge.getBlack().getY() + currentEdge.getDirectionY());
 
@@ -294,7 +294,7 @@ public class Potrace implements IOutlinePathFinder {
 				&& (!this.isWithinImageBoundaries(rightWhiteAhead) || !ImageUtil
 						.isForegoundPixel(this.processingPixels[rightWhiteAhead.getX()][rightWhiteAhead.getY()]))) {
 			// pattern matches
-			return new Edge(leftWhiteAhead, currentEdge.getBlack());
+			return new OutlineEdge(leftWhiteAhead, currentEdge.getBlack());
 		}
 
 		return null;
@@ -307,7 +307,7 @@ public class Potrace implements IOutlinePathFinder {
 	 * @return null if the pattern didn't match, otherwise turn left and return
 	 *         next edge
 	 */
-	private Edge getFourthPatternEdge(Edge currentEdge) {
+	private OutlineEdge getFourthPatternEdge(OutlineEdge currentEdge) {
 		Vertex leftWhiteAhead = new Vertex(currentEdge.getBlack().getX() + currentEdge.getDirectionX(),
 				currentEdge.getBlack().getY() + currentEdge.getDirectionY());
 
