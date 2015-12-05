@@ -10,7 +10,7 @@ import java.util.HashSet;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vertex;
 
 /**
- * [SHORT_DESCRIPTION] 
+ * {@link Outline} set wrapper class.
  *
  * @author Sascha Feldmann <sascha.feldmann@gmx.de>
  * @since 17.11.2015

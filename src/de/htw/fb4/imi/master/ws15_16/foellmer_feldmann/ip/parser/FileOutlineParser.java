@@ -20,12 +20,24 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.models.Outline
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.util.ImageUtil;
 
 /**
- * [SHORT_DESCRIPTION]
+ * This parser parses {@link OutlineSequenceSet} by that look like this:
+ * 
+ * outer
+ * p 29 2
+ * p 29 3
+ * p 28 3
+ * p 27 3
+ * p 27 4
+ * p 26 4
  *
+ * where outer indicdates a new outer outline and each p line is an edge on the outline.
  * @author Sascha Feldmann <sascha.feldmann@gmx.de>
  * @since 05.12.2015
  */
 public class FileOutlineParser implements IOutlineParser {
+	private static final String LINE_INNER = "inner";
+	private static final String LINE_OUTER = "outer";
+	protected static final Pattern PPOINT = Pattern.compile("p\\s([0-9]+)\\s([0-9]+)");
 	protected IOriginalPixels originalPixelsAlgorithm;
 
 	public void setOriginalPixelsAlgorithm(IOriginalPixels originalPixelsAlgorithm) {
@@ -56,19 +68,18 @@ public class FileOutlineParser implements IOutlineParser {
 			fReader = new FileReader(inputFile);
 			bReader = new BufferedReader(fReader);
 			Outline outline = null;
-			Pattern pPoint = Pattern.compile("p\\s([0-9]+)\\s([0-9]+)");
 
 			while (bReader.ready()) {
 				String line = bReader.readLine();
 
-				if (line.equals("outer")) {
+				if (line.equals(LINE_OUTER)) {
 					if (null != outline) {
 						set.add(outline);
 					}
 
 					outline = new Outline(true);
 					outline.setOriginalPixels(this.originalPixelsAlgorithm.getOriginalBinaryPixels());
-				} else if (line.equals("inner")) {
+				} else if (line.equals(LINE_INNER)) {
 					if (null != outline) {
 						set.add(outline);
 					}
@@ -76,7 +87,7 @@ public class FileOutlineParser implements IOutlineParser {
 					outline = new Outline(false);
 					outline.setOriginalPixels(this.originalPixelsAlgorithm.getOriginalBinaryPixels());
 				} else {
-					Matcher mPoint = pPoint.matcher(line);
+					Matcher mPoint = PPOINT.matcher(line);
 
 					if (mPoint.matches()) {
 						int x = Integer.parseInt(mPoint.group(1));

@@ -228,18 +228,18 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		Set<Vector2D[]> possibleSegments = new HashSet<>();
 
 		// TODO uncomment following code, get findNextPossibleSegment working
-//		for (int i = 0; i < closedStraigthPathes.length; i++) {
-//			Vector2D[] segmentVertices = findNextPossibleSegment(i, closedStraigthPathes);
-//
-//			possibleSegments.add(segmentVertices);
-//		}
-		
-		Vector2D[] segmentVertices = new Vector2D[closedStraigthPathes.length - 1];
+		for (int i = 0; i < closedStraigthPathes.length; i++) {
+			Vector2D[] segmentVertices = findNextPossibleSegment(i, closedStraigthPathes);
 
-		for (int i = 1; i < closedStraigthPathes.length; i++) {
-			segmentVertices[i - 1] = Factory.newVector2D(this.outlineVertices[i - 1], this.outlineVertices[i]);
+			possibleSegments.add(segmentVertices);
 		}
-		possibleSegments.add(segmentVertices);
+		
+//		Vector2D[] segmentVertices = new Vector2D[closedStraigthPathes.length - 1];
+//
+//		for (int i = 1; i < closedStraigthPathes.length; i++) {
+//			segmentVertices[i - 1] = Factory.newVector2D(this.outlineVertices[i - 1], this.outlineVertices[i]);
+//		}
+//		possibleSegments.add(segmentVertices);
 
 		return possibleSegments;
 	}

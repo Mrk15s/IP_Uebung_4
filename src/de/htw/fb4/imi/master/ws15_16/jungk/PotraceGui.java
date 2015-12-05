@@ -337,11 +337,9 @@ public class PotraceGui extends JPanel {
 		long startTime = System.currentTimeMillis();
 
 		for (Outline outline : outlines) {
-			if (outline.isOuter()) {
 				int[] pivots = this.polygonFinderAlgorithm.findStraightPathes(outline);
 				Set<Vector2D[]> possibleSegments = this.polygonFinderAlgorithm.findPossibleSegments(pivots);
 				outerPolygons.add(this.polygonFinderAlgorithm.findOptimalPolygon(possibleSegments));
-			} // TODO add inner in separate list
 		}
 
 		long time = System.currentTimeMillis() - startTime;
