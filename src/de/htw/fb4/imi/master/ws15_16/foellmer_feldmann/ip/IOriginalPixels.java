@@ -24,4 +24,6 @@ public interface IOriginalPixels {
 	
 	boolean isWithinImageBoundaries(Vertex v);
 
+	int[][] getOriginalBinaryPixels();
+
 }

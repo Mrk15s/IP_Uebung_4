@@ -19,56 +19,20 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.util.ImageUtil;
  * @author Sascha Feldmann <sascha.feldmann@gmx.de>
  * @since 17.11.2015
  */
-public class PotraceOutlineFinder implements IOutlinePathFinder {
+public class PotraceOutlineFinder extends AbstractOutlineFinder {
 	private static final int PROCESSED = 1;
 
-	private TurnPolicy turnPolicy = TurnPolicy.TURN_RIGHT;
-	private int width;
-	private int height;
-	private int[][] originalPixels;
-	private int[][] processingPixels;
-	private int[][] processedPixels;
+	private OutlineSequenceSet outlines;	
 
-	private OutlineSequenceSet outlines;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.IOriginalPixels#
-	 * setOriginalBinaryPixels(int, int, int[])
-	 */
-	@Override
-	public void setOriginalBinaryPixels(int width, int height, int[] originalPixels) {
-		this.setOriginalBinaryPixels(ImageUtil.get2DFrom1DArray(width, height, originalPixels));
+	public PotraceOutlineFinder(IOutlinePathFinder outlineFinder) {
+		super(outlineFinder);
 	}
 
-	public TurnPolicy getTurnPolicy() {
-		return turnPolicy;
+	public PotraceOutlineFinder()
+	{
+		super();
 	}
-
-	public void setTurnPolicy(TurnPolicy turnPolicy) {
-		this.turnPolicy = turnPolicy;
-	}
-
-	public int[][] getProcessingPixels() {
-		return processingPixels;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.IOriginalPixels#
-	 * setOriginalBinaryPixels(int[][])
-	 */
-	@Override
-	public void setOriginalBinaryPixels(int[][] originalPixels) {
-		this.width = originalPixels.length;
-		this.height = originalPixels[0].length;
-
-		this.originalPixels = originalPixels;
-		this.processedPixels = new int[width][height];
-	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -77,7 +41,13 @@ public class PotraceOutlineFinder implements IOutlinePathFinder {
 	 */
 	@Override
 	public Set<Outline> find() {
-		this.outlines = new OutlineSequenceSet();
+		Set<Outline> superOutlines = super.find();
+		
+		if (null == superOutlines) {
+			this.outlines = new OutlineSequenceSet();
+		} else {
+			return superOutlines;
+		}
 
 		this.findOuterPathes();
 		this.findInnerPathes();
@@ -323,13 +293,5 @@ public class PotraceOutlineFinder implements IOutlinePathFinder {
 		}
 
 		return null;
-	}
-
-	public boolean isWithinImageBoundaries(int x, int y) {
-		return (x >= 0) && (x < width) && (y >= 0) && (y < height);
-	}
-
-	public boolean isWithinImageBoundaries(Vertex v) {
-		return this.isWithinImageBoundaries(v.getX(), v.getY());
 	}
 }

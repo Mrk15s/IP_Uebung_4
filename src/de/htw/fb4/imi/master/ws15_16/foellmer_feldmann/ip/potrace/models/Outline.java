@@ -39,10 +39,24 @@ public class Outline {
 	protected int type = TYPE_OUTER;
 	private int minY = Integer.MAX_VALUE;
 	private int maxY = -1;
+	/**
+	 * Does this outline store vertices for each corner? If not, it only stores the black pixels, but not redundantly. 
+	 * E.g.:
+	 *    _ 
+	 *  _| 
+	 * |
+	 * 
+	 * Here, we would store only the black pixels (so two). If the vertices were stored for eachc orner, we would store 5. 
+	 */
+	private boolean verticesForEachCorner = false;
 
 	public Outline(boolean isOuter) {
 		super();
 
+		setIsOuter(isOuter);
+	}
+
+	public void setIsOuter(boolean isOuter) {
 		if (isOuter) {
 			this.type = TYPE_OUTER;
 		} else {
@@ -50,8 +64,16 @@ public class Outline {
 		}
 	}
 
+	public Outline() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public void setOriginalPixels(int[][] originalPixels) {
 		this.originalPixels = originalPixels;
+	}
+	
+	public int[][] getOriginalPixels() {
+		return originalPixels;
 	}
 	
 	public boolean isClosed() {
@@ -108,7 +130,10 @@ public class Outline {
 		}
 
 		this.edges.add(edge);
-		this.addWhiteVertex(edge.getWhite());
+		
+		if (null != edge.getWhite()) {
+			this.addWhiteVertex(edge.getWhite());
+		}
 		this.addBlackVertex(edge.getBlack());
 	}
 
@@ -263,5 +288,13 @@ public class Outline {
 	 */
 	public int getNumberOfVertices() {
 		return this.blackVertices.size();
+	}
+
+	public boolean hasVerticesForEachCorner() {
+		return this.verticesForEachCorner;
+	}
+	
+	public void setVerticesForEachCorner(boolean verticesForEachCorner) {
+		this.verticesForEachCorner = verticesForEachCorner;
 	}
 }

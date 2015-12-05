@@ -5,6 +5,7 @@
  */
 package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip;
 
+import java.io.File;
 import java.util.Observer;
 
 import javax.swing.JSlider;
@@ -15,10 +16,12 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.DepthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.OptimizedBreadthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.OptimizedDepthFirst;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ff.Sequential;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.parser.FileOutlineParser;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOutlinePathFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.PotraceOutlineFinder;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.PotracePolygonFinder;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.TxtOutlineReader;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.IsoData;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdFindingAlgorithm;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdUserInput;
@@ -128,5 +131,18 @@ public class Factory {
 
 	public static IPolygonFinder newPotracePolyginFinderAlgorithm() {
 		return new PotracePolygonFinder();
+	}
+
+	public static IOutlinePathFinder newPotraceOutlineFinderAlgorithmWithContoursTxtFallback(File inputImageFile) {
+		TxtOutlineReader txtOutlineReader = new TxtOutlineReader();
+		txtOutlineReader.setImageFile(inputImageFile);
+		txtOutlineReader.setParser(newFileOutlineParser());
+		
+		PotraceOutlineFinder potraceFinder = new PotraceOutlineFinder(txtOutlineReader);
+		return potraceFinder;
+	}
+
+	private static FileOutlineParser newFileOutlineParser() {
+		return new FileOutlineParser();
 	}
 }

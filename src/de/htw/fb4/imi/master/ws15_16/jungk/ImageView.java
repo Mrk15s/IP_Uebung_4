@@ -405,7 +405,11 @@ public class ImageView extends JScrollPane {
 
 			for (Outline outline : outlines) {
 				if (outline.isOuter() || displayInnerOutline) {
-					paintOutline(g, outline);
+					if (outline.hasVerticesForEachCorner()) {
+						paintOutlineCornerBased(g, outline);
+					} else {
+						paintOutline(g, outline);
+					}
 				}
 			}
 		}
@@ -415,8 +419,19 @@ public class ImageView extends JScrollPane {
 				paintEdgeOnOutline(g, outline, edgeOnOutline);
 			}
 		}
+		
+		private void paintOutlineCornerBased(Graphics g, Outline outline) {
+			Vertex beforeBlack = null;
+			for (OutlineEdge edgeOnOutline : outline.getEdges()) {
+				if (null != beforeBlack) {
+					beforeBlack = paintEdgeOnOutlineCornerBased(g, outline, edgeOnOutline, beforeBlack);
+				} else {
+					beforeBlack = edgeOnOutline.getBlack();
+				}
+			}
+		}
 
-		private void paintEdgeOnOutline(Graphics g, Outline outline, OutlineEdge edgeOnOutline) {
+		private Vertex paintEdgeOnOutline(Graphics g, Outline outline, OutlineEdge edgeOnOutline) {
 			Color edgeColor = outline.isOuter() ? COLOR_OUTER_OUTLINE : COLOR_INNER_OUTLINE;
 
 			// offset to set the correct black pixel corner
@@ -426,18 +441,22 @@ public class ImageView extends JScrollPane {
 				// case: white pixel is left of black
 				offsetX = 0;
 				offsetY = 0;
+				System.out.println("Case 0");
 			} else if (edgeOnOutline.vertexIsRightNeighbourOf(edgeOnOutline.getWhite(), edgeOnOutline.getBlack())) {
 				// case: white pixel is right of black
 				offsetX = 1;
 				offsetY = 1;
+				System.out.println("Case 1");
 			} else if (edgeOnOutline.vertexIsBelowNeighbourOf(edgeOnOutline.getWhite(), edgeOnOutline.getBlack())) {
 				// case: white pixel is below of black
 				offsetX = 0;
 				offsetY = 1;
+				System.out.println("Case 2");
 			} else if (edgeOnOutline.vertexIsAboveNeighbourOf(edgeOnOutline.getWhite(), edgeOnOutline.getBlack())) {
 				// case: white pixel is above of black
 				offsetX = 1;
 				offsetY = 0;
+				System.out.println("Case 3");
 			}
 
 			// offsetX -= outline.isOuter() ? 0 : 1;
@@ -449,6 +468,18 @@ public class ImageView extends JScrollPane {
 			((Graphics2D) g).setStroke(new BasicStroke(WIDTH_OUTLINE));
 			g.setColor(edgeColor);
 			g.drawLine(startX, startY, targetX, targetY);
+			
+			return edgeOnOutline.getBlack();
+		}
+		
+		private Vertex paintEdgeOnOutlineCornerBased(Graphics g, Outline outline, OutlineEdge edgeOnOutline, Vertex blackBefore) {
+			Color edgeColor = outline.isOuter() ? COLOR_OUTER_OUTLINE : COLOR_INNER_OUTLINE;
+
+			((Graphics2D) g).setStroke(new BasicStroke(WIDTH_OUTLINE));
+			g.setColor(edgeColor);
+			drawLine(g, blackBefore, edgeOnOutline.getBlack());
+			
+			return edgeOnOutline.getBlack();
 		}
 
 		private void paintPolygons(Graphics g) {

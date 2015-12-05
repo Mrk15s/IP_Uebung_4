@@ -78,12 +78,13 @@ public class PotraceGui extends JPanel {
 	private JCheckBox showOutlinesCheckbox;
 	private JCheckBox showPolygonsCheckbox;
 	private JCheckBox showImageCheckbox;
+	private File input;
 
 	public PotraceGui() {
 		super(new BorderLayout(border, border));
 
 		// load the default image
-		File input = new File(initalOpen);
+		this.input = new File(initalOpen);
 
 		if (!input.canRead())
 			input = openFile(); // file not found, choose another image
@@ -99,7 +100,7 @@ public class PotraceGui extends JPanel {
 		JButton load = new JButton("Bild öffnen");
 		load.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File input = openFile();
+				input = openFile();
 				if (input != null) {
 					srcView.loadImage(input);
 					runPotrace();
@@ -298,7 +299,7 @@ public class PotraceGui extends JPanel {
 		long time = 0;
 
 		// trigger outline finding
-		this.outlinePathFinderAlgorithm = Factory.newPotraceOutlineFinderAlgorithm();
+		this.outlinePathFinderAlgorithm = Factory.newPotraceOutlineFinderAlgorithmWithContoursTxtFallback(input);
 		this.outlinePathFinderAlgorithm.setTurnPolicy(policy);
 		time = detectAndShowOutline(dstPixels);
 

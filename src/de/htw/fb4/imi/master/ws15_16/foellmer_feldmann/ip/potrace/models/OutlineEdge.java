@@ -21,7 +21,7 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IOut
  */
 public class OutlineEdge extends Edge {	
 	private Integer directionX;
-	private Integer directionY;	
+	private Integer directionY;
 	
 	public OutlineEdge(Vertex white, Vertex black) {
 		super(white, black);
@@ -116,5 +116,5 @@ public class OutlineEdge extends Edge {
 		builder.append(getBlack());
 		builder.append("]");
 		return builder.toString();
-	}	
+	}
 }
