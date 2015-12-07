@@ -495,6 +495,7 @@ public class ImageView extends JScrollPane {
 					Vertex b = polygon[i].getB();
 
 					drawDot(g, a);
+					drawDot(g, b);
 					drawLine(g, a, b);
 				}
 			}

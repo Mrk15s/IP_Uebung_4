@@ -6,6 +6,7 @@
 package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
@@ -22,6 +23,7 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.util.VectorUtil;
  * @since 30.11.2015
  */
 public class PotracePolygonFinder implements IPolygonFinder {
+	public static final int NO_POSSIBLE_SEGMENT = -1;
 	/**
 	 * all vertices on the outline (black pixels).
 	 */
@@ -45,6 +47,8 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	private boolean directionLeft;
 	private boolean directionBottom;
 	private boolean directionRight;
+	
+	private Vector2D[] currentOptimum;
 
 	/*
 	 * (non-Javadoc)
@@ -96,7 +100,7 @@ public class PotracePolygonFinder implements IPolygonFinder {
 			Vector2D currentVector = Factory.newVector2D(currentVertex, startVertex);
 
 			if (moreThanThreeDirections(currentVector) || abusesConstraint(currentVector)) {
-				this.pivots[startI] = i - 1; // save first index of vertex that
+				this.pivots[startI] = i; // save first index of vertex that
 											// terminates straight path of given
 											// startVertex
 				return;
@@ -217,62 +221,112 @@ public class PotracePolygonFinder implements IPolygonFinder {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.
-	 * IPolygonFinder#findPossibleSegments(de.htw.fb4.imi.master.ws15_16.
-	 * foellmer_feldmann.ip.Vertex[])
+	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder#findPossibleSegments(int[])
 	 */
 	@Override
-	public Set<Vector2D[]> findPossibleSegments(final int[] closedStraigthPathes) {
-		Set<Vector2D[]> possibleSegments = new HashSet<>();
-
-		// TODO uncomment following code, get findNextPossibleSegment working
-		for (int i = 0; i < closedStraigthPathes.length; i++) {
-			Vector2D[] segmentVertices = findNextPossibleSegment(i, closedStraigthPathes);
-
-			possibleSegments.add(segmentVertices);
-		}
+	public int[] findPossibleSegments(final int[] closedStraigthPathes) {
+		int[] possibleSegments = new int[closedStraigthPathes.length];
 		
-//		Vector2D[] segmentVertices = new Vector2D[closedStraigthPathes.length - 1];
-//
-//		for (int i = 1; i < closedStraigthPathes.length; i++) {
-//			segmentVertices[i - 1] = Factory.newVector2D(this.outlineVertices[i - 1], this.outlineVertices[i]);
-//		}
-//		possibleSegments.add(segmentVertices);
+		for (int i = 0; i < closedStraigthPathes.length; i++) {
+			int j = findNextPossibleSegment(i, closedStraigthPathes);
+			
+			possibleSegments[i] = j;
+		}
 
 		return possibleSegments;
 	}
 
-	protected Vector2D[] findNextPossibleSegment(final int startI, final int[] closedStraigthPathes) {
-		Set<Integer> reachedIndices = new HashSet<>();
-		Set<Vector2D> segmentVertices = new HashSet<>();
-
-		int previousI = startI;
-		int currentI = closedStraigthPathes[previousI];
-
-		while (currentI != startI && !reachedIndices.contains(currentI)) {
-			reachedIndices.add(currentI);
-			segmentVertices.add(Factory.newVector2D(this.outlineVertices[currentI], this.outlineVertices[previousI]));
-
-			previousI = currentI;
-			currentI = closedStraigthPathes[currentI];
+	private int findNextPossibleSegment(int i, int[] closedStraigthPathes) {
+		int nextPossibleIndex = NO_POSSIBLE_SEGMENT;
+		
+		if (i - 1 <= 0 || !isStraight(i, i - 1, closedStraigthPathes)) {
+			nextPossibleIndex = NO_POSSIBLE_SEGMENT;
+		} else {			
+			for (int j = i + 1; j < closedStraigthPathes.length - 3; j++) {
+				if (!isStraight(i, j, closedStraigthPathes)) {
+					nextPossibleIndex = j - 1;
+					break;
+				}
+			}	
 		}
+		
+		return nextPossibleIndex;
+	}
 
-		return segmentVertices.toArray(new Vector2D[segmentVertices.size()]);
+	private boolean isStraight(int currentI, int otherI, int[] closedStraigthPathes) {
+		return closedStraigthPathes[currentI] == closedStraigthPathes[otherI]; // both vertices on outline have the same straight path terminator
 	}
 
 	@Override
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.
-	 * IPolygonFinder#findOptimalPolygon(java.util.Set)
+	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder#findOptimalPolygon(int[])
 	 */
-	public Vector2D[] findOptimalPolygon(Set<Vector2D[]> possibleSegments) {
-		// TODO implement logic to find best segment for this outline
-		return possibleSegments.iterator().next();
+	public Vector2D[] findOptimalPolygon(int[] possibleSegments) {
+		return getOptimalPolygon(possibleSegments);
+	}	
+
+	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {		
+		Set<Vector2D> bestPolygon = new HashSet<>();
+		
+		for (int j = 0; j < 1; j++) {		
+			Set<Vector2D> newPolygon = buildPolygon(possibleSegments, j);
+			
+			if (better(newPolygon, bestPolygon)) {
+				bestPolygon = newPolygon;
+			}
+		}				
+		
+		return bestPolygon.toArray(new Vector2D[bestPolygon.size()]);
 	}
 
+	private boolean better(Set<Vector2D> newPolygon, Set<Vector2D> bestPolygon) {
+		return bestPolygon.size() == 0 || (newPolygon.size() < bestPolygon.size() && newPolygon.size() != 0);
+	}
+
+	protected Set<Vector2D> buildPolygon(int[] possibleSegments, int startIndex) {
+		Set<Vector2D> polygon;
+		polygon = new HashSet<>();
+		Vertex startVertex = this.outlineVertices[startIndex];
+		Vertex lastVertex = startVertex; // set start vertex
+		
+		for (int i = startIndex; i < possibleSegments.length; i++) {
+			if (NO_POSSIBLE_SEGMENT != possibleSegments[i]) {
+				int nextPossibleVertexIndex = possibleSegments[i];
+				Vertex currentVertex = this.outlineVertices[nextPossibleVertexIndex];
+				
+				if (!currentVertex.equals(lastVertex)) {
+					addConnection(polygon, lastVertex, currentVertex);
+					
+					lastVertex = currentVertex;
+				}
+			}
+		}
+		
+		// connect lastVertex and startVertex
+		if (!startVertex.equals(lastVertex)) {
+			addConnection(polygon, lastVertex, startVertex);
+		}
+		return polygon;
+	}
+
+	protected void addConnection(Set<Vector2D> polygon, Vertex lastVertex, Vertex currentVertex) {
+		Vector2D vector = Factory.newVector2D(lastVertex, currentVertex);
+		polygon.add(vector);
+	}
+	
+	protected Vector2D[] getOptimalPolygon(List<Vector2D[]> optimalPolygons) {
+		int minimumSegmentNumber = Integer.MAX_VALUE;
+		int minIndex = 0;
+		for (int i = 0; i < optimalPolygons.size(); i++) {
+			int polygonSize = optimalPolygons.get(i).length;
+			
+			if (polygonSize < minimumSegmentNumber) {
+				minimumSegmentNumber = polygonSize;
+				minIndex = i;
+			}
+		}
+		
+		return optimalPolygons.get(minIndex);
+	}
 }

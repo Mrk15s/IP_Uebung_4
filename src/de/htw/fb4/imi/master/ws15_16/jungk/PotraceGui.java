@@ -338,7 +338,7 @@ public class PotraceGui extends JPanel {
 
 		for (Outline outline : outlines) {
 				int[] pivots = this.polygonFinderAlgorithm.findStraightPathes(outline);
-				Set<Vector2D[]> possibleSegments = this.polygonFinderAlgorithm.findPossibleSegments(pivots);
+				int[] possibleSegments = this.polygonFinderAlgorithm.findPossibleSegments(pivots);
 				outerPolygons.add(this.polygonFinderAlgorithm.findOptimalPolygon(possibleSegments));
 		}
 
