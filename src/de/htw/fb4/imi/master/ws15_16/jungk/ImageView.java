@@ -37,7 +37,7 @@ public class ImageView extends JScrollPane {
 
 	static final float WIDTH_OUTLINE = 2;
 	static final float WIDTH_POLYGON = 3;
-	static final int RADIUS_POLYGON_DOT = 4;
+	static final int DIAMETER_POLYGON_DOT = 4;
 
 	static final boolean SHOW_IMAGE_DEFAULT = true;
 	static final boolean SHOW_OUTLINES_DEFAULT = false;
@@ -501,8 +501,12 @@ public class ImageView extends JScrollPane {
 		}
 
 		private void drawDot(Graphics g, Vertex a) {			
-			// TODO fix / center dot
-			g.drawOval(this.calcScaledX(a.getX() + offsetX), this.calcScaledY(a.getY() + offsetY), RADIUS_POLYGON_DOT, RADIUS_POLYGON_DOT);			
+			int radius = DIAMETER_POLYGON_DOT / 2;
+			
+			int ovalX = this.calcScaledX(a.getX() + offsetX) - radius;
+			int ovalY = this.calcScaledY(a.getY() + offsetY) - radius;
+			
+			g.drawOval(ovalX, ovalY, DIAMETER_POLYGON_DOT, DIAMETER_POLYGON_DOT);			
 		}
 
 		protected void drawLine(Graphics g, Vertex a, Vertex b) {

@@ -96,7 +96,7 @@ public class PotracePolygonFinder implements IPolygonFinder {
 			Vector2D currentVector = Factory.newVector2D(currentVertex, startVertex);
 
 			if (moreThanThreeDirections(currentVector) || abusesConstraint(currentVector)) {
-				this.pivots[startI] = i; // save first index of vertex that
+				this.pivots[startI] = i - 1; // save first index of vertex that
 											// terminates straight path of given
 											// startVertex
 				return;
