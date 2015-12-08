@@ -47,7 +47,7 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	private boolean directionLeft;
 	private boolean directionBottom;
 	private boolean directionRight;
-	
+
 	private Vector2D[] currentOptimum;
 
 	/*
@@ -97,9 +97,11 @@ public class PotracePolygonFinder implements IPolygonFinder {
 			Vertex currentVertex = outlineVertices[i];
 			storeDirection(currentVertex, this.outlineVertices[i - 1]);
 
-			Vector2D currentVector = Factory.newVector2D(currentVertex, startVertex);
+			Vector2D currentVector = Factory.newVector2D(startVertex, currentVertex);
 
-			if (moreThanThreeDirections(currentVector) || abusesConstraint(currentVector)) {
+			if (
+					moreThanThreeDirections(currentVector) || 
+					abusesConstraint(currentVector)) {
 				this.pivots[startI] = i; // save first index of vertex that
 											// terminates straight path of given
 											// startVertex
@@ -191,7 +193,7 @@ public class PotracePolygonFinder implements IPolygonFinder {
 
 		Vector2D d = Factory.newVector2D(dX, dY);
 
-		if (VectorUtil.calcCrossProduct(c0, d) > 0) {
+		if (VectorUtil.calcCrossProduct(c0, d) >= 0) {
 			c0 = d;
 		} // else: do not change constraint c0
 	}
@@ -221,62 +223,88 @@ public class PotracePolygonFinder implements IPolygonFinder {
 
 	/*
 	 * (non-Javadoc)
-	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder#findPossibleSegments(int[])
+	 * 
+	 * @see
+	 * de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.
+	 * IPolygonFinder#findPossibleSegments(int[])
 	 */
 	@Override
 	public int[] findPossibleSegments(final int[] closedStraigthPathes) {
 		int[] possibleSegments = new int[closedStraigthPathes.length];
-		
-		for (int i = 0; i < closedStraigthPathes.length; i++) {
-			int j = findNextPossibleSegment(i, closedStraigthPathes);
-			
-			possibleSegments[i] = j;
-		}
 
-		return possibleSegments;
+		// for (int i = 0; i < closedStraigthPathes.length; i++) {
+		// int j = findNextPossibleSegment(i, closedStraigthPathes);
+		//
+		// possibleSegments[i] = j;
+		// }
+		 for (int i = 0; i < closedStraigthPathes.length; i++) {
+			 int previous = (i <= 0 ? closedStraigthPathes.length - 1 : i - 1);
+			 int jPlus = closedStraigthPathes[previous] == 0 ?
+			 closedStraigthPathes.length - 1 : previous;
+			
+			 int j = closedStraigthPathes[jPlus] - 1;
+			
+			 possibleSegments[i] = j;
+		 }
+
+		 // TODO uncomment the following line to activate possible segments
+//		return possibleSegments;
+		return closedStraigthPathes;
 	}
 
 	private int findNextPossibleSegment(int i, int[] closedStraigthPathes) {
 		int nextPossibleIndex = NO_POSSIBLE_SEGMENT;
-		
+
 		if (i - 1 <= 0 || !isStraight(i, i - 1, closedStraigthPathes)) {
 			nextPossibleIndex = NO_POSSIBLE_SEGMENT;
-		} else {			
+		} else {
 			for (int j = i + 1; j < closedStraigthPathes.length - 3; j++) {
 				if (!isStraight(i, j, closedStraigthPathes)) {
 					nextPossibleIndex = j - 1;
 					break;
 				}
-			}	
+			}
 		}
-		
+
 		return nextPossibleIndex;
 	}
 
 	private boolean isStraight(int currentI, int otherI, int[] closedStraigthPathes) {
-		return closedStraigthPathes[currentI] == closedStraigthPathes[otherI]; // both vertices on outline have the same straight path terminator
+		return closedStraigthPathes[currentI] == closedStraigthPathes[otherI]; // both
+																				// vertices
+																				// on
+																				// outline
+																				// have
+																				// the
+																				// same
+																				// straight
+																				// path
+																				// terminator
 	}
 
 	@Override
 	/*
 	 * (non-Javadoc)
-	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.IPolygonFinder#findOptimalPolygon(int[])
+	 * 
+	 * @see
+	 * de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm.
+	 * IPolygonFinder#findOptimalPolygon(int[])
 	 */
 	public Vector2D[] findOptimalPolygon(int[] possibleSegments) {
 		return getOptimalPolygon(possibleSegments);
-	}	
+	}
 
-	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {		
+	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {
 		Set<Vector2D> bestPolygon = new HashSet<>();
-		
-		for (int j = 0; j < 1; j++) {		
+
+		for (int j = 0; j < 1; j++) {
 			Set<Vector2D> newPolygon = buildPolygon(possibleSegments, j);
-			
+
 			if (better(newPolygon, bestPolygon)) {
 				bestPolygon = newPolygon;
 			}
-		}				
-		
+		}
+
 		return bestPolygon.toArray(new Vector2D[bestPolygon.size()]);
 	}
 
@@ -289,20 +317,28 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		polygon = new HashSet<>();
 		Vertex startVertex = this.outlineVertices[startIndex];
 		Vertex lastVertex = startVertex; // set start vertex
-		
-		for (int i = startIndex; i < possibleSegments.length; i++) {
-			if (NO_POSSIBLE_SEGMENT != possibleSegments[i]) {
-				int nextPossibleVertexIndex = possibleSegments[i];
-				Vertex currentVertex = this.outlineVertices[nextPossibleVertexIndex];
-				
-				if (!currentVertex.equals(lastVertex)) {
-					addConnection(polygon, lastVertex, currentVertex);
-					
-					lastVertex = currentVertex;
-				}
+		Set<Integer> processed = new HashSet<>();
+
+		boolean first = true;
+		for (int i = startIndex; i < possibleSegments.length; i++) {			
+			int nextPossibleVertexIndex = possibleSegments[i];
+			
+			if ((!first && nextPossibleVertexIndex == 0)) {
+				break;
+			}
+						
+			first = false;
+			Vertex currentVertex = this.outlineVertices[nextPossibleVertexIndex];
+			processed.add(i);
+
+			if (!currentVertex.equals(lastVertex)) {
+				addConnection(polygon, lastVertex, currentVertex);
+
+				lastVertex = currentVertex;
+				i = nextPossibleVertexIndex;
 			}
 		}
-		
+
 		// connect lastVertex and startVertex
 		if (!startVertex.equals(lastVertex)) {
 			addConnection(polygon, lastVertex, startVertex);
@@ -314,19 +350,19 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		Vector2D vector = Factory.newVector2D(lastVertex, currentVertex);
 		polygon.add(vector);
 	}
-	
+
 	protected Vector2D[] getOptimalPolygon(List<Vector2D[]> optimalPolygons) {
 		int minimumSegmentNumber = Integer.MAX_VALUE;
 		int minIndex = 0;
 		for (int i = 0; i < optimalPolygons.size(); i++) {
 			int polygonSize = optimalPolygons.get(i).length;
-			
+
 			if (polygonSize < minimumSegmentNumber) {
 				minimumSegmentNumber = polygonSize;
 				minIndex = i;
 			}
 		}
-		
+
 		return optimalPolygons.get(minIndex);
 	}
 }
