@@ -48,8 +48,6 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	private boolean directionBottom;
 	private boolean directionRight;
 
-	private Vector2D[] currentOptimum;
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -92,24 +90,48 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		this.directionLeft = false;
 		this.directionBottom = false;
 		this.directionRight = false;
+		 int i = startI + 1;
+		// Vertex currentVertex = null;
+		// Vector2D currentVector = null;
 
-		for (int i = startI + 1; i < outlineVertices.length; i++) {
-			Vertex currentVertex = outlineVertices[i];
-			storeDirection(currentVertex, this.outlineVertices[i - 1]);
+//		do {
+//			currentVertex = outlineVertices[getCyclic(i)];
+//			storeDirection(currentVertex, this.outlineVertices[getCyclic(i - 1)]);
+//
+//			currentVector = Factory.newVector2D(startVertex, currentVertex);
+//
+//			actualizeConstraint(currentVector);
+//			i++;
+//		} while (!moreThanThreeDirections(currentVector) && !abusesConstraint(currentVector));
+//
+//		this.pivots[startI] = getCyclic(i); // save first index of vertex that
+//		// terminates straight path of given
+//		// startVertex
+//		return;
+		boolean terminates = false;
+		while (!terminates) {
+			 Vertex currentVertex = outlineVertices[getCyclic(i)];
+			 storeDirection(currentVertex, this.outlineVertices[getCyclic(i - 1)]);
+			
+			 Vector2D currentVector = Factory.newVector2D(startVertex,
+			 currentVertex);
+			
+			 if (moreThanThreeDirections(currentVector) ||
+				 abusesConstraint(currentVector)) {
+				 this.pivots[startI] = getCyclic(i); // save first index of vertex that
+				 // terminates straight path of given
+				 // startVertex
+				 terminates = true;
+				 return;
+			 }
+			
+			 actualizeConstraint(currentVector);
+			 i++;
+		 }
+	}
 
-			Vector2D currentVector = Factory.newVector2D(startVertex, currentVertex);
-
-			if (
-					moreThanThreeDirections(currentVector) || 
-					abusesConstraint(currentVector)) {
-				this.pivots[startI] = i; // save first index of vertex that
-											// terminates straight path of given
-											// startVertex
-				return;
-			}
-
-			actualizeConstraint(currentVector);
-		}
+	private int getCyclic(final int i) {
+		return i % this.outlineVertices.length;
 	}
 
 	private void storeDirection(Vertex currentVertex, Vertex lastVertex) {
@@ -232,54 +254,27 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	public int[] findPossibleSegments(final int[] closedStraigthPathes) {
 		int[] possibleSegments = new int[closedStraigthPathes.length];
 
-		// for (int i = 0; i < closedStraigthPathes.length; i++) {
-		// int j = findNextPossibleSegment(i, closedStraigthPathes);
-		//
-		// possibleSegments[i] = j;
-		// }
-		 for (int i = 0; i < closedStraigthPathes.length; i++) {
-			 int previous = (i <= 0 ? closedStraigthPathes.length - 1 : i - 1);
-			 int jPlus = closedStraigthPathes[previous] == 0 ?
-			 closedStraigthPathes.length - 1 : previous;
-			
-			 int j = closedStraigthPathes[jPlus] - 1;
-			
-			 possibleSegments[i] = j;
-		 }
+		for (int i = 0; i < closedStraigthPathes.length; i++) {
+			int j = closedStraigthPathes[getPreviousIndex(i, closedStraigthPathes)] - 1;
 
-		 // TODO uncomment the following line to activate possible segments
-//		return possibleSegments;
-		return closedStraigthPathes;
-	}
-
-	private int findNextPossibleSegment(int i, int[] closedStraigthPathes) {
-		int nextPossibleIndex = NO_POSSIBLE_SEGMENT;
-
-		if (i - 1 <= 0 || !isStraight(i, i - 1, closedStraigthPathes)) {
-			nextPossibleIndex = NO_POSSIBLE_SEGMENT;
-		} else {
-			for (int j = i + 1; j < closedStraigthPathes.length - 3; j++) {
-				if (!isStraight(i, j, closedStraigthPathes)) {
-					nextPossibleIndex = j - 1;
-					break;
-				}
+			if (j == -1) {
+				j = closedStraigthPathes.length - 1;
 			}
+
+			possibleSegments[i] = j;
 		}
 
-		return nextPossibleIndex;
+		// TODO uncomment the following line to activate possible segments
+		return possibleSegments;
+		// return closedStraigthPathes;
 	}
 
-	private boolean isStraight(int currentI, int otherI, int[] closedStraigthPathes) {
-		return closedStraigthPathes[currentI] == closedStraigthPathes[otherI]; // both
-																				// vertices
-																				// on
-																				// outline
-																				// have
-																				// the
-																				// same
-																				// straight
-																				// path
-																				// terminator
+	protected int getPreviousIndex(int i, int[] closedStraigthPathes) {
+		if (i <= 0) {
+			return closedStraigthPathes.length - 1;
+		}
+
+		return i - 1;
 	}
 
 	@Override
@@ -297,8 +292,8 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {
 		Set<Vector2D> bestPolygon = new HashSet<>();
 
-		for (int j = 0; j < 1; j++) {
-			Set<Vector2D> newPolygon = buildPolygon(possibleSegments, j);
+		for (int startIndex = 0; startIndex < 1; startIndex++) {
+			Set<Vector2D> newPolygon = buildPolygon(possibleSegments, startIndex);
 
 			if (better(newPolygon, bestPolygon)) {
 				bestPolygon = newPolygon;
@@ -313,36 +308,33 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	}
 
 	protected Set<Vector2D> buildPolygon(int[] possibleSegments, int startIndex) {
-		Set<Vector2D> polygon;
-		polygon = new HashSet<>();
-		Vertex startVertex = this.outlineVertices[startIndex];
+		Set<Vector2D> polygon = new HashSet<>();
+		final Vertex startVertex = this.outlineVertices[startIndex];
 		Vertex lastVertex = startVertex; // set start vertex
-		Set<Integer> processed = new HashSet<>();
+		int lastOutlineVertexIndex = startIndex;
 
-		boolean first = true;
-		for (int i = startIndex; i < possibleSegments.length; i++) {			
-			int nextPossibleVertexIndex = possibleSegments[i];
-			
-			if ((!first && nextPossibleVertexIndex == 0)) {
+		for (int i = startIndex; i < possibleSegments.length; i++) {
+			int nextPossibleOutlineVertexIndex = possibleSegments[i];
+			Vertex nextVertex = this.outlineVertices[nextPossibleOutlineVertexIndex];
+
+			if (nextPossibleOutlineVertexIndex > lastOutlineVertexIndex) {
+				addConnection(polygon, lastVertex, nextVertex);
+				lastVertex = nextVertex;
+				lastOutlineVertexIndex = i;
+				i = nextPossibleOutlineVertexIndex;				
+			} else { // 2 ! > 6
+				addConnection(polygon, lastVertex, nextVertex);
+				lastVertex = nextVertex;
+				lastOutlineVertexIndex = i;
+				i = nextPossibleOutlineVertexIndex;			
 				break;
-			}
-						
-			first = false;
-			Vertex currentVertex = this.outlineVertices[nextPossibleVertexIndex];
-			processed.add(i);
-
-			if (!currentVertex.equals(lastVertex)) {
-				addConnection(polygon, lastVertex, currentVertex);
-
-				lastVertex = currentVertex;
-				i = nextPossibleVertexIndex;
-			}
+			}			
 		}
 
 		// connect lastVertex and startVertex
-		if (!startVertex.equals(lastVertex)) {
+//		if (!startVertex.equals(lastVertex)) {
 			addConnection(polygon, lastVertex, startVertex);
-		}
+//		}
 		return polygon;
 	}
 
