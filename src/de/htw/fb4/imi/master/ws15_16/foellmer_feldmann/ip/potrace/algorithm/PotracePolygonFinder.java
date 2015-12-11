@@ -291,8 +291,6 @@ public class PotracePolygonFinder implements IPolygonFinder {
 
 	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {
 		List<Vector2D> bestPolygon = new ArrayList<>();
-		
-		System.out.println("getOptimalPolygon:");
 
 		for (int startIndex = 0; startIndex < 1; startIndex++) {
 			List<Vector2D> newPolygon = buildPolygon(possibleSegments, startIndex);
@@ -301,8 +299,6 @@ public class PotracePolygonFinder implements IPolygonFinder {
 				bestPolygon = newPolygon;
 			}
 		}
-		
-		System.out.println();
 
 		return bestPolygon.toArray(new Vector2D[bestPolygon.size()]);
 	}
@@ -344,8 +340,6 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	protected void addConnection(List<Vector2D> polygon, Vertex lastVertex, Vertex currentVertex) {
 		Vector2D vector = Factory.newVector2D(lastVertex, currentVertex);
 		polygon.add(vector);
-		
-//		System.out.println("Added vector: " + vector);
 	}
 
 	protected Vector2D[] getOptimalPolygon(List<Vector2D[]> optimalPolygons) {
