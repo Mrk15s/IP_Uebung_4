@@ -90,26 +90,7 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		this.directionBottom = false;
 		this.directionRight = false;
 		int i = startI + 1;
-		// Vertex currentVertex = null;
-		// Vector2D currentVector = null;
 
-		// do {
-		// currentVertex = outlineVertices[getCyclic(i)];
-		// storeDirection(currentVertex, this.outlineVertices[getCyclic(i -
-		// 1)]);
-		//
-		// currentVector = Factory.newVector2D(startVertex, currentVertex);
-		//
-		// actualizeConstraint(currentVector);
-		// i++;
-		// } while (!moreThanThreeDirections(currentVector) &&
-		// !abusesConstraint(currentVector));
-		//
-		// this.pivots[startI] = getCyclic(i); // save first index of vertex
-		// that
-		// // terminates straight path of given
-		// // startVertex
-		// return;
 		boolean terminates = false;
 		while (!terminates) {
 			Vertex currentVertex = outlineVertices[getCyclic(i)];
@@ -312,22 +293,37 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		final Vertex startVertex = this.outlineVertices[startIndex];
 		Vertex lastVertex = startVertex; // set start vertex
 		int lastIndex = startIndex;
+		int i = startIndex;
 
-		for (int i = startIndex; i < possibleSegments.length; i++) {
+		boolean terminates = false;
+		while (!terminates) {
 			int nextPossibleOutlineVertexIndex = possibleSegments[i];
 			Vertex nextVertex = this.outlineVertices[nextPossibleOutlineVertexIndex];
 
 			if (i >= lastIndex) {
-//				if (!nextVertex.equals(lastVertex)) {
-					addConnection(polygon, lastVertex, nextVertex);
-//				}
+				addConnection(polygon, lastVertex, nextVertex);
 				lastVertex = nextVertex;
 				lastIndex = i;
 				i = nextPossibleOutlineVertexIndex;
 			} else {
-				break;
+				terminates = true;
 			}
 		}
+//		for (int i = startIndex; i < possibleSegments.length; i++) {
+//			int nextPossibleOutlineVertexIndex = possibleSegments[i];
+//			Vertex nextVertex = this.outlineVertices[nextPossibleOutlineVertexIndex];
+//
+//			if (i >= lastIndex) {
+////				if (!nextVertex.equals(lastVertex)) {
+//					addConnection(polygon, lastVertex, nextVertex);
+////				}
+//				lastVertex = nextVertex;
+//				lastIndex = i;
+//				i = nextPossibleOutlineVertexIndex;
+//			} else {
+//				break;
+//			}
+//		}
 
 		// connect lastVertex and startVertex
 		if (!startVertex.equals(lastVertex)) {
