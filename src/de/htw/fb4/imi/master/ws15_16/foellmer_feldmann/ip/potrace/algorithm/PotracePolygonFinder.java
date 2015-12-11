@@ -5,9 +5,8 @@
  */
 package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.potrace.algorithm;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Vector2D;
@@ -90,44 +89,46 @@ public class PotracePolygonFinder implements IPolygonFinder {
 		this.directionLeft = false;
 		this.directionBottom = false;
 		this.directionRight = false;
-		 int i = startI + 1;
+		int i = startI + 1;
 		// Vertex currentVertex = null;
 		// Vector2D currentVector = null;
 
-//		do {
-//			currentVertex = outlineVertices[getCyclic(i)];
-//			storeDirection(currentVertex, this.outlineVertices[getCyclic(i - 1)]);
-//
-//			currentVector = Factory.newVector2D(startVertex, currentVertex);
-//
-//			actualizeConstraint(currentVector);
-//			i++;
-//		} while (!moreThanThreeDirections(currentVector) && !abusesConstraint(currentVector));
-//
-//		this.pivots[startI] = getCyclic(i); // save first index of vertex that
-//		// terminates straight path of given
-//		// startVertex
-//		return;
+		// do {
+		// currentVertex = outlineVertices[getCyclic(i)];
+		// storeDirection(currentVertex, this.outlineVertices[getCyclic(i -
+		// 1)]);
+		//
+		// currentVector = Factory.newVector2D(startVertex, currentVertex);
+		//
+		// actualizeConstraint(currentVector);
+		// i++;
+		// } while (!moreThanThreeDirections(currentVector) &&
+		// !abusesConstraint(currentVector));
+		//
+		// this.pivots[startI] = getCyclic(i); // save first index of vertex
+		// that
+		// // terminates straight path of given
+		// // startVertex
+		// return;
 		boolean terminates = false;
 		while (!terminates) {
-			 Vertex currentVertex = outlineVertices[getCyclic(i)];
-			 storeDirection(currentVertex, this.outlineVertices[getCyclic(i - 1)]);
-			
-			 Vector2D currentVector = Factory.newVector2D(startVertex,
-			 currentVertex);
-			
-			 if (moreThanThreeDirections(currentVector) ||
-				 abusesConstraint(currentVector)) {
-				 this.pivots[startI] = getCyclic(i); // save first index of vertex that
-				 // terminates straight path of given
-				 // startVertex
-				 terminates = true;
-				 return;
-			 }
-			
-			 actualizeConstraint(currentVector);
-			 i++;
-		 }
+			Vertex currentVertex = outlineVertices[getCyclic(i)];
+			storeDirection(currentVertex, this.outlineVertices[getCyclic(i - 1)]);
+
+			Vector2D currentVector = Factory.newVector2D(startVertex, currentVertex);
+
+			if (moreThanThreeDirections(currentVector) || abusesConstraint(currentVector)) {
+				this.pivots[startI] = getCyclic(i); // save first index of
+													// vertex that
+				// terminates straight path of given
+				// startVertex
+				terminates = true;
+				return;
+			}
+
+			actualizeConstraint(currentVector);
+			i++;
+		}
 	}
 
 	private int getCyclic(final int i) {
@@ -264,7 +265,6 @@ public class PotracePolygonFinder implements IPolygonFinder {
 			possibleSegments[i] = j;
 		}
 
-		// TODO uncomment the following line to activate possible segments
 		return possibleSegments;
 		// return closedStraigthPathes;
 	}
@@ -290,57 +290,62 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	}
 
 	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {
-		Set<Vector2D> bestPolygon = new HashSet<>();
+		List<Vector2D> bestPolygon = new ArrayList<>();
+		
+		System.out.println("getOptimalPolygon:");
 
 		for (int startIndex = 0; startIndex < 1; startIndex++) {
-			Set<Vector2D> newPolygon = buildPolygon(possibleSegments, startIndex);
+			List<Vector2D> newPolygon = buildPolygon(possibleSegments, startIndex);
 
 			if (better(newPolygon, bestPolygon)) {
 				bestPolygon = newPolygon;
 			}
 		}
+		
+		System.out.println();
 
 		return bestPolygon.toArray(new Vector2D[bestPolygon.size()]);
 	}
 
-	private boolean better(Set<Vector2D> newPolygon, Set<Vector2D> bestPolygon) {
+	private boolean better(List<Vector2D> newPolygon, List<Vector2D> bestPolygon) {
 		return bestPolygon.size() == 0 || (newPolygon.size() < bestPolygon.size() && newPolygon.size() != 0);
 	}
 
-	protected Set<Vector2D> buildPolygon(int[] possibleSegments, int startIndex) {
-		Set<Vector2D> polygon = new HashSet<>();
+	protected List<Vector2D> buildPolygon(int[] possibleSegments, int startIndex) {
+		List<Vector2D> polygon = new ArrayList<>();
 		final Vertex startVertex = this.outlineVertices[startIndex];
 		Vertex lastVertex = startVertex; // set start vertex
-		int lastOutlineVertexIndex = startIndex;
+		int lastIndex = startIndex;
 
 		for (int i = startIndex; i < possibleSegments.length; i++) {
 			int nextPossibleOutlineVertexIndex = possibleSegments[i];
 			Vertex nextVertex = this.outlineVertices[nextPossibleOutlineVertexIndex];
 
-			if (nextPossibleOutlineVertexIndex > lastOutlineVertexIndex) {
-				addConnection(polygon, lastVertex, nextVertex);
+			if (i >= lastIndex) {
+//				if (!nextVertex.equals(lastVertex)) {
+					addConnection(polygon, lastVertex, nextVertex);
+//				}
 				lastVertex = nextVertex;
-				lastOutlineVertexIndex = i;
-				i = nextPossibleOutlineVertexIndex;				
-			} else { // 2 ! > 6
-				addConnection(polygon, lastVertex, nextVertex);
-				lastVertex = nextVertex;
-				lastOutlineVertexIndex = i;
-				i = nextPossibleOutlineVertexIndex;			
+				lastIndex = i;
+				i = nextPossibleOutlineVertexIndex;
+			} else {
 				break;
-			}			
+			}
 		}
 
 		// connect lastVertex and startVertex
-//		if (!startVertex.equals(lastVertex)) {
+		if (!startVertex.equals(lastVertex)) {
 			addConnection(polygon, lastVertex, startVertex);
-//		}
+		}
+
 		return polygon;
 	}
 
-	protected void addConnection(Set<Vector2D> polygon, Vertex lastVertex, Vertex currentVertex) {
+	protected void addConnection(List<Vector2D> polygon, Vertex lastVertex, Vertex currentVertex) {
 		Vector2D vector = Factory.newVector2D(lastVertex, currentVertex);
 		polygon.add(vector);
+		
+//		System.out.println("Added vector: " + vector);
 	}
 
 	protected Vector2D[] getOptimalPolygon(List<Vector2D[]> optimalPolygons) {

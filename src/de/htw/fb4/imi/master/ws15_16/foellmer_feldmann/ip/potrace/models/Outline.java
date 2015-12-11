@@ -65,7 +65,7 @@ public class Outline {
 	}
 
 	public Outline() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
 
 	public void setOriginalPixels(int[][] originalPixels) {
