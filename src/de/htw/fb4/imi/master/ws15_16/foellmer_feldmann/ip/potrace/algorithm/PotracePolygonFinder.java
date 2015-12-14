@@ -291,42 +291,33 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	protected List<Vector2D> buildPolygon(int[] possibleSegments, int startIndex) {
 		List<Vector2D> polygon = new ArrayList<>();
 		final Vertex startVertex = this.outlineVertices[startIndex];
-		Vertex lastVertex = startVertex; // set start vertex
-		int lastIndex = startIndex;
+		Vertex lastVertex = null;
 		int i = startIndex;
+		boolean isSecoundRound = false;
 
 		boolean terminates = false;
 		while (!terminates) {
 			int nextPossibleOutlineVertexIndex = possibleSegments[i];
 			Vertex nextVertex = this.outlineVertices[nextPossibleOutlineVertexIndex];
+			lastVertex = this.outlineVertices[i];
 
-			if (i >= lastIndex) {
+			if (nextPossibleOutlineVertexIndex < i) {
+				// check if we reached the end of the array (next outline index will switch to the beginning of the array)
+				isSecoundRound = true;
+			}
+			
+			if (isSecoundRound && nextPossibleOutlineVertexIndex > startIndex) {
+				// cycle completed (start index was reached again)
+				terminates = true;
+			} else {
 				addConnection(polygon, lastVertex, nextVertex);
 				lastVertex = nextVertex;
-				lastIndex = i;
 				i = nextPossibleOutlineVertexIndex;
-			} else {
-				terminates = true;
 			}
 		}
-//		for (int i = startIndex; i < possibleSegments.length; i++) {
-//			int nextPossibleOutlineVertexIndex = possibleSegments[i];
-//			Vertex nextVertex = this.outlineVertices[nextPossibleOutlineVertexIndex];
-//
-//			if (i >= lastIndex) {
-////				if (!nextVertex.equals(lastVertex)) {
-//					addConnection(polygon, lastVertex, nextVertex);
-////				}
-//				lastVertex = nextVertex;
-//				lastIndex = i;
-//				i = nextPossibleOutlineVertexIndex;
-//			} else {
-//				break;
-//			}
-//		}
 
 		// connect lastVertex and startVertex
-		if (!startVertex.equals(lastVertex)) {
+		if (null != lastVertex && !startVertex.equals(lastVertex)) {
 			addConnection(polygon, lastVertex, startVertex);
 		}
 
