@@ -273,7 +273,7 @@ public class PotracePolygonFinder implements IPolygonFinder {
 	private Vector2D[] getOptimalPolygon(int[] possibleSegments) {
 		List<Vector2D> bestPolygon = new ArrayList<>();
 
-		for (int startIndex = 0; startIndex < 1; startIndex++) {
+		for (int startIndex = 0; startIndex < possibleSegments.length; startIndex++) {
 			List<Vector2D> newPolygon = buildPolygon(possibleSegments, startIndex);
 
 			if (better(newPolygon, bestPolygon)) {
@@ -303,12 +303,19 @@ public class PotracePolygonFinder implements IPolygonFinder {
 
 			if (nextPossibleOutlineVertexIndex < i) {
 				// check if we reached the end of the array (next outline index will switch to the beginning of the array)
+				if (isSecoundRound) {
+					// this is the third round right now but startIndex was never reached again
+					terminates = true;
+					break;						
+				}
+				
 				isSecoundRound = true;
 			}
 			
-			if (isSecoundRound && nextPossibleOutlineVertexIndex > startIndex) {
+			if (isSecoundRound && nextPossibleOutlineVertexIndex >= startIndex) {
 				// cycle completed (start index was reached again)
 				terminates = true;
+				break;
 			} else {
 				addConnection(polygon, lastVertex, nextVertex);
 				lastVertex = nextVertex;
